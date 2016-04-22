@@ -48,8 +48,8 @@ while(! eof FILE2){																													## until EOF file2
 	my %hash = ();																														## prepare hash
 	for( my $i = 0 ; $i < $turn_size ; $i++ ){																## load N lines
 		if( my $in = <FILE2> ){																									## if line loaded
-    	my $digest = sha1_hex($in);																						## get SHA1 value
-    	#my $digest = md5($in);																								##  or MD5 ...
+			my $digest = sha1_hex($in);																						## get SHA1 value
+			#my $digest = md5($in);																								##  or MD5 ...
 			$hash{ $digest } = 1;																										## mark as used
 		}
 		else{																																		## if line not loaded - End Of File file2
@@ -60,8 +60,8 @@ while(! eof FILE2){																													## until EOF file2
 	open(FILE1, $infile) || die "\nCan`t open file $infile!\n\n";							## open source file
 	open(OUT, ">$outfile") || die "\nCan`t write output to $outfile!\n\n";		## open temporary output
 	while( my $in = <FILE1> ){																								## load line
-  	my $digest = sha1_hex($in);																							## get SHA1 value
-    #my $digest = md5($in);																									##  or MD5 ...
+		my $digest = sha1_hex($in);																							## get SHA1 value
+		#my $digest = md5($in);																									##  or MD5 ...
 		if(not defined $hash{$digest}){																					## if hash (line) not found - write line to output
 			print OUT $in;
 		}
