@@ -1,0 +1,80 @@
+#!/usr/bin/perl
+
+use Digest::SHA qw(sha1 sha1_hex sha1_base64);
+#use Digest::MD5 qw(md5 md5_hex md5_base64);
+
+
+$|=1;
+
+=cut
+#################################################################
+	First, we must care about memory usage:
+	SHA1 hash is 40 bytes length, so 1 hash block of N lines has 40*N bytes at least.
+	1024 lines - about 40 Kb, 1048576 lines - about 40 Mb, etc.
+	Let be 2000000 lines 
+#################################################################
+=cut
+
+my $turn_size = 2000000;
+
+## Usage message
+if(not defined $ARGV[0] || not defined $ARGV[1] || not defined $ARGV[2]){
+	print "\nUsage: $0 <file1> <file2> <output_file>\n\n";
+	exit(1);
+}
+
+## check files
+if (! -f $ARGV[0] ){
+	print "\nFile $ARGV[0] is not exists!\n\n";
+	exit(1);
+}
+if (! -f $ARGV[1] ){
+	print "\nFile $ARGV[1] is not exists!\n\n";
+	exit(1);
+}
+if (-f $ARGV[2] ){
+	print "\nFile $ARGV[2] already exists!\n\n";
+	exit(1);
+}
+
+## prepare first turn
+my $infile = $ARGV[0];																											## use source file - file1
+my $outfile = $ARGV[2].'.tmp';																							## temporary output
+
+## begin processing
+open(FILE2,$ARGV[1]) || die "\nCan`t open file $ARGV[1]!\n\n";
+while(! eof FILE2){																													## until EOF file2
+	## begin turn
+	my %hash = ();																														## prepare hash
+	for( my $i = 0 ; $i < $turn_size ; $i++ ){																## load N lines
+		if( my $in = <FILE2> ){																									## if line loaded
+    	my $digest = sha1_hex($in);																						## get SHA1 value
+    	#my $digest = md5($in);																								##  or MD5 ...
+			$hash{ $digest } = 1;																										## mark as used
+		}
+		else{																																		## if line not loaded - End Of File file2
+			last;
+		}
+	}
+	## compare hashes
+	open(FILE1, $infile) || die "\nCan`t open file $infile!\n\n";							## open source file
+	open(OUT, ">$outfile") || die "\nCan`t write output to $outfile!\n\n";		## open temporary output
+	while( my $in = <FILE1> ){																								## load line
+  	my $digest = sha1_hex($in);																							## get SHA1 value
+    #my $digest = md5($in);																									##  or MD5 ...
+		if(not defined $hash{$digest}){																					## if hash (line) not found - write line to output
+			print OUT $in;
+		}
+	}
+	close(OUT);
+	close(FILE1);
+	## prepare next turn or output
+	$infile = $ARGV[2];																												## next source - current output
+	rename($outfile,$infile);																									## rename file
+
+}
+close(FILE2);
+
+exit(0);
+#################################################################
+
